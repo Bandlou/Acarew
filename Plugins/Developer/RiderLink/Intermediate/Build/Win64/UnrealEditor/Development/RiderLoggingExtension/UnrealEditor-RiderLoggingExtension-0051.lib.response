@@ -1,0 +1,12 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-RiderLoggingExtension-0051.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\Mateli\Documents\Unreal Projects\acarew\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLoggingExtension\Module.RiderLoggingExtension.cpp.obj"
+"C:\Users\Mateli\Documents\Unreal Projects\acarew\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLoggingExtension\Default.rc2.res"
+/OUT:"C:\Users\Mateli\Documents\Unreal Projects\acarew\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderLoggingExtension\UnrealEditor-RiderLoggingExtension-0051.lib"
+/INCLUDE:IMPLEMENT_MODULE_RiderLoggingExtension
