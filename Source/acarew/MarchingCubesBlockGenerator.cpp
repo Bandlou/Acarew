@@ -188,7 +188,9 @@ float AMarchingCubesBlockGenerator::GenerateDensity(const FIntVector Coordinates
 
 	const float Rad = 15;
 	// return -8 + Z + sin(X * .5f) * 2 + cos(Y * .5f) * 2;
-	return - Rad + FVector(X - Rad * 1.1f, Y - Rad * 1.1f, Z - Rad * 1.1f).Size() + sin(X * .25f) + cos(Y * .25f);
+	return - Rad + FVector(X - Rad * 1.1f, Y - Rad * 1.1f, 2 * Z - Rad * 1.5f).Size() +
+		sin(X * .5f) +
+		cos(Y * .5f);
 }
 
 float AMarchingCubesBlockGenerator::InterpolateDensity(const FIntVector CoordinatesA, const FIntVector CoordinatesB,

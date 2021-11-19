@@ -18,8 +18,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh parameters")
 	float CubeRadius = 100.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Marching cubes parameters",
-		meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Marching cubes parameters")
 	float IsoLevel = 0.5f;
 
 protected:
