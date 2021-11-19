@@ -2,11 +2,11 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "MarchingCubesComputeShader",
-	"Description": "",
-	"Category": "Other",
-	"CreatedBy": "",
-	"CreatedByURL": "",
+	"FriendlyName": "Marching Cubes Compute Shader",
+	"Description": "A marching cubes implementation with a compute shader",
+	"Category": "Shader",
+	"CreatedBy": "Louis BANDELIER",
+	"CreatedByURL": "lbandelier@hotmail.com",
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
@@ -18,7 +18,7 @@
 		{
 			"Name": "MarchingCubesComputeShader",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PostConfigInit"
 		}
 	]
 }

@@ -13,7 +13,6 @@ class ACAREW_API AMarchingCubesBlockGenerator : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AMarchingCubesBlockGenerator();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh parameters")
