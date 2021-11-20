@@ -1,9 +1,9 @@
 # Acarew
 
-### Description
-WIP
+## Description
+[WIP] Marching Cubes basic implementation.
 
-### Resources
+## Resources
 - Marching Cubes for procedural terrain generation: https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
 - Shader in plugin: https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/Rendering/ShaderInPlugin/QuickStart/
 - Global shaders: https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/Rendering/ShaderDevelopment/AddingGlobalShaders/
@@ -18,3 +18,6 @@ UE5 migration:
   - UNIFORM_MEMBER: replaced with SHADER_PARAMETER
 - https://dawnarc.com/2020/06/ue4rhi-rendering-hardware-interface-notes/
   - ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER: replaced with ENQUEUE_RENDER_COMMAND
+- https://github.com/ValentinKraft/UE4_SortingComputeShader/tree/master_4.24_transition
+  - _FShaderResourceViewRHIParamRef_: replaced with _new FRHIShaderResourceView_
+  - 

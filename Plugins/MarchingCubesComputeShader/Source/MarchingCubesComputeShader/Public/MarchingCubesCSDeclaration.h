@@ -30,18 +30,18 @@
 #include "UniformBuffer.h"
 
 //This buffer should contain variables that never, or rarely change
-BEGIN_UNIFORM_BUFFER_STRUCT(FComputeShaderConstantParameters,)
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderConstantParameters,)
 	SHADER_PARAMETER(float, SimulationSpeed)
-END_UNIFORM_BUFFER_STRUCT()
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 //This buffer is for variables that change very often (each frame for example)
-BEGIN_UNIFORM_BUFFER_STRUCT(FComputeShaderVariableParameters,)
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderVariableParameters,)
 	SHADER_PARAMETER(FVector4, CurrentCamPos)
 	SHADER_PARAMETER(int, g_iLevel)
 	SHADER_PARAMETER(int, g_iLevelMask)
 	SHADER_PARAMETER(int, g_iWidth)
 	SHADER_PARAMETER(int, g_iHeight)
-END_UNIFORM_BUFFER_STRUCT()
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 typedef TUniformBufferRef<FComputeShaderConstantParameters> FComputeShaderConstantParametersRef;
 typedef TUniformBufferRef<FComputeShaderVariableParameters> FComputeShaderVariableParametersRef;
@@ -63,27 +63,27 @@ public:
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
 		return GetMaxSupportedFeatureLevel(Parameters.Platform) >= ERHIFeatureLevel::SM5;
-	};
+	}
 
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters,
 	                                         FShaderCompilerEnvironment& OutEnvironment);
 
 	// Sets the main output texture UAV (the point position texture)
-	void SetOutputTexture(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef OutputTextureUAV) const;
+	void SetOutputTexture(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef OutputTextureUAV);
 	// This function is required to bind our constant / uniform buffers to the shader.
 	void SetUniformBuffers(FRHICommandList& RHICmdList, FComputeShaderConstantParameters& ConstantParameters,
-	                       FComputeShaderVariableParameters& VariableParameters) const;
+	                       FComputeShaderVariableParameters& VariableParameters);
 	// This is used to clean up the buffer binds after each invocation to let them be changed and used elsewhere if needed.
-	void UnbindBuffers(FRHICommandList& RHICmdList) const;
+	void UnbindBuffers(FRHICommandList& RHICmdList);
 
 	// Sets the unsorted point position input data
 	void SetPointPosData(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef BufferUAV,
-	                     FUnorderedAccessViewRHIRef BufferUAV2) const;
+	                     FUnorderedAccessViewRHIRef BufferUAV2);
 	// Sets the unsorted point color input data
 	void SetPointColorData(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef BufferUAV,
-	                       FUnorderedAccessViewRHIRef BufferUAV2) const;
+	                       FUnorderedAccessViewRHIRef BufferUAV2);
 	// Sets the output texture for the sorted point colors
-	void SetPointColorTexture(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef BufferUAV) const;
+	void SetPointColorTexture(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef BufferUAV);
 
 private:
 	//This is the actual output resource that we will bind to the compute shader
@@ -107,16 +107,16 @@ public:
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
 		return GetMaxSupportedFeatureLevel(Parameters.Platform) >= ERHIFeatureLevel::SM5;
-	};
+	}
 
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters,
 	                                         FShaderCompilerEnvironment& OutEnvironment);
 
 	// This function is required to bind our constant / uniform buffers to the shader.
 	void SetUniformBuffers(FRHICommandList& RHICmdList, FComputeShaderConstantParameters& ConstantParameters,
-	                       FComputeShaderVariableParameters& VariableParameters) const;
+	                       FComputeShaderVariableParameters& VariableParameters);
 	// This is used to clean up the buffer binds after each invocation to let them be changed and used elsewhere if needed.
-	void UnbindBuffers(FRHICommandList& RHICmdList) const;
+	void UnbindBuffers(FRHICommandList& RHICmdList);
 
 private:
 	// This is the actual output resource that we will bind to the compute shader

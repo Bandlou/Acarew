@@ -34,8 +34,8 @@
 
 //These are needed to actually implement the constant buffers so they are available inside our shader
 //They also need to be unique over the entire solution since they can in fact be accessed from any shader
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FComputeShaderConstantParameters, "CSConstants");
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FComputeShaderVariableParameters, "CSVariables");
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderConstantParameters, "CSConstants");
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderVariableParameters, "CSVariables");
 
 FComputeShaderDeclaration::FComputeShaderDeclaration(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 	: FGlobalShader(Initializer)
@@ -58,9 +58,9 @@ void FComputeShaderDeclaration::ModifyCompilationEnvironment(const FGlobalShader
 }
 
 void FComputeShaderDeclaration::SetOutputTexture(FRHICommandList& RHICmdList,
-                                                 FUnorderedAccessViewRHIRef OutputSurfaceUAV) const
+                                                 FUnorderedAccessViewRHIRef OutputSurfaceUAV)
 {
-	const TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	FRHIComputeShader* ComputeShaderRHI = ComputeShader.GetComputeShader();
 
 	if (OutputTexture.IsBound())
@@ -68,9 +68,9 @@ void FComputeShaderDeclaration::SetOutputTexture(FRHICommandList& RHICmdList,
 }
 
 void FComputeShaderDeclaration::SetPointPosData(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef BufferUAV,
-                                                FUnorderedAccessViewRHIRef BufferUAV2) const
+                                                FUnorderedAccessViewRHIRef BufferUAV2)
 {
-	const TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	FRHIComputeShader* ComputeShaderRHI = ComputeShader.GetComputeShader();
 
 	if (PointPosData.IsBound())
@@ -80,9 +80,9 @@ void FComputeShaderDeclaration::SetPointPosData(FRHICommandList& RHICmdList, FUn
 }
 
 void FComputeShaderDeclaration::SetPointColorData(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef BufferUAV,
-                                                  FUnorderedAccessViewRHIRef BufferUAV2) const
+                                                  FUnorderedAccessViewRHIRef BufferUAV2)
 {
-	const TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	FRHIComputeShader* ComputeShaderRHI = ComputeShader.GetComputeShader();
 
 	if (PointColorData.IsBound())
@@ -92,9 +92,9 @@ void FComputeShaderDeclaration::SetPointColorData(FRHICommandList& RHICmdList, F
 }
 
 void FComputeShaderDeclaration::SetPointColorTexture(FRHICommandList& RHICmdList,
-                                                     FUnorderedAccessViewRHIRef BufferUAV) const
+                                                     FUnorderedAccessViewRHIRef BufferUAV)
 {
-	const TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	FRHIComputeShader* ComputeShaderRHI = ComputeShader.GetComputeShader();
 
 	if (OutputColorTexture.IsBound())
@@ -103,14 +103,14 @@ void FComputeShaderDeclaration::SetPointColorTexture(FRHICommandList& RHICmdList
 
 void FComputeShaderDeclaration::SetUniformBuffers(FRHICommandList& RHICmdList,
                                                   FComputeShaderConstantParameters& ConstantParameters,
-                                                  FComputeShaderVariableParameters& VariableParameters) const
+                                                  FComputeShaderVariableParameters& VariableParameters)
 {
-	const FComputeShaderConstantParametersRef ConstantParametersBuffer =
+	FComputeShaderConstantParametersRef ConstantParametersBuffer =
 		FComputeShaderConstantParametersRef::CreateUniformBufferImmediate(ConstantParameters, UniformBuffer_SingleDraw);
-	const FComputeShaderVariableParametersRef VariableParametersBuffer =
+	FComputeShaderVariableParametersRef VariableParametersBuffer =
 		FComputeShaderVariableParametersRef::CreateUniformBufferImmediate(VariableParameters, UniformBuffer_SingleDraw);
 
-	const TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 
 	SetUniformBufferParameter(RHICmdList, ComputeShader.GetComputeShader(),
 	                          GetUniformBufferParameter<FComputeShaderConstantParameters>(), ConstantParametersBuffer);
@@ -119,9 +119,9 @@ void FComputeShaderDeclaration::SetUniformBuffers(FRHICommandList& RHICmdList,
 }
 
 /* Unbinds buffers that will be used elsewhere */
-void FComputeShaderDeclaration::UnbindBuffers(FRHICommandList& RHICmdList) const
+void FComputeShaderDeclaration::UnbindBuffers(FRHICommandList& RHICmdList)
 {
-	const TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	FRHIComputeShader* ComputeShaderRHI = ComputeShader.GetComputeShader();
 
 	if (OutputTexture.IsBound())
@@ -148,6 +148,8 @@ FComputeShaderTransposeDeclaration::FComputeShaderTransposeDeclaration(
 	// The second parameter is the name it will be known by in the shader
 	PointPosData.Bind(Initializer.ParameterMap, TEXT("PointPosData"));
 	PointPosDataBuffer.Bind(Initializer.ParameterMap, TEXT("PointPosDataBuffer"));
+	PointColorData.Bind(Initializer.ParameterMap, TEXT("PointColorData"));
+	PointColorDataBuffer.Bind(Initializer.ParameterMap, TEXT("PointColorDataBuffer"));
 }
 
 void FComputeShaderTransposeDeclaration::ModifyCompilationEnvironment(
@@ -159,14 +161,14 @@ void FComputeShaderTransposeDeclaration::ModifyCompilationEnvironment(
 
 void FComputeShaderTransposeDeclaration::SetUniformBuffers(FRHICommandList& RHICmdList,
                                                            FComputeShaderConstantParameters& ConstantParameters,
-                                                           FComputeShaderVariableParameters& VariableParameters) const
+                                                           FComputeShaderVariableParameters& VariableParameters)
 {
-	const FComputeShaderConstantParametersRef ConstantParametersBuffer =
+	FComputeShaderConstantParametersRef ConstantParametersBuffer =
 		FComputeShaderConstantParametersRef::CreateUniformBufferImmediate(ConstantParameters, UniformBuffer_SingleDraw);
-	const FComputeShaderVariableParametersRef VariableParametersBuffer =
+	FComputeShaderVariableParametersRef VariableParametersBuffer =
 		FComputeShaderVariableParametersRef::CreateUniformBufferImmediate(VariableParameters, UniformBuffer_SingleDraw);
 
-	const TShaderMapRef<FComputeShaderTransposeDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderTransposeDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 
 	SetUniformBufferParameter(RHICmdList, ComputeShader.GetComputeShader(),
 	                          GetUniformBufferParameter<FComputeShaderConstantParameters>(), ConstantParametersBuffer);
@@ -175,9 +177,9 @@ void FComputeShaderTransposeDeclaration::SetUniformBuffers(FRHICommandList& RHIC
 }
 
 /* Unbinds buffers that will be used elsewhere */
-void FComputeShaderTransposeDeclaration::UnbindBuffers(FRHICommandList& RHICmdList) const
+void FComputeShaderTransposeDeclaration::UnbindBuffers(FRHICommandList& RHICmdList)
 {
-	const TShaderMapRef<FComputeShaderTransposeDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
+	TShaderMapRef<FComputeShaderTransposeDeclaration> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	FRHIComputeShader* ComputeShaderRHI = ComputeShader.GetComputeShader();
 
 	if (PointPosData.IsBound())
@@ -186,10 +188,15 @@ void FComputeShaderTransposeDeclaration::UnbindBuffers(FRHICommandList& RHICmdLi
 	// TODO: was FShaderResourceViewRHIParamRef before
 }
 
-//This is what will instantiate the shader into the engine from the engine/Shaders folder
-//                      ShaderType                    ShaderFileName                Shader function name       Type
-IMPLEMENT_SHADER_TYPE(, FComputeShaderDeclaration, TEXT("MarchingCubesComputeShader"), TEXT("MainCS"), SF_Compute);
-IMPLEMENT_SHADER_TYPE(, FComputeShaderTransposeDeclaration, TEXT("MarchingCubesComputeShader"), TEXT("TransposeMatrix"),
+// This is what will instantiate the shader into the engine from the engine/Shaders folder
+//		ShaderType		ShaderFileName		Shader function name		Type
+IMPLEMENT_SHADER_TYPE(, FComputeShaderDeclaration,
+                        TEXT("/MarchingCubesComputeShaderPlugin/MarchingCubesComputeShader.usf"),
+                        TEXT("MainCS"),
+                        SF_Compute);
+IMPLEMENT_SHADER_TYPE(, FComputeShaderTransposeDeclaration,
+                        TEXT("/MarchingCubesComputeShaderPlugin/MarchingCubesComputeShader.usf"),
+                        TEXT("TransposeMatrix"),
                         SF_Compute);
 
 /***************************************************************************/
@@ -201,8 +208,8 @@ IMPLEMENT_SHADER_TYPE(, FComputeShaderTransposeDeclaration, TEXT("MarchingCubesC
 void FMarchingCubesCSModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	const FString ShaderDir = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("MarchingCubesComputeShader/Shaders"));
-	AddShaderSourceDirectoryMapping("/Plugin/MarchingCubesComputeShader", ShaderDir);
+	FString ShaderDir = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("MarchingCubesComputeShader/Shaders"));
+	AddShaderSourceDirectoryMapping("/MarchingCubesComputeShaderPlugin", ShaderDir);
 }
 
 void FMarchingCubesCSModule::ShutdownModule()

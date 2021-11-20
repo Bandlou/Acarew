@@ -5,6 +5,7 @@
 
 #include "MeshAttributes.h"
 #include "StaticMeshAttributes.h"
+#include "MarchingCubesCS.h"
 
 // Sets default values
 ABasicShapes::ABasicShapes()
@@ -30,6 +31,21 @@ void ABasicShapes::PostLoad()
 
 void ABasicShapes::GenerateMesh()
 {
+	// FMarchingCubesCS* mComputeShader = new FMarchingCubesCS(1.0f, BITONIC_BLOCK_SIZE, BITONIC_BLOCK_SIZE,
+	//                                                         ERHIFeatureLevel::SM5);
+	//
+	// TArray<FLinearColor>* PosData = new TArray<FLinearColor>{
+	// 	FLinearColor(.2f, .2f, .2f),
+	// 	FLinearColor(.4f, .4f, .4f)
+	// };
+	// mComputeShader->SetPointPosDataReference(PosData);
+	//
+	// TArray<uint8>* ColorData = new TArray<uint8>{255, 3};
+	// mComputeShader->SetPointColorDataReference(ColorData);
+	//
+	// mComputeShader->Save();
+	// mComputeShader->ExecuteComputeShader(FVector4(0, 0, 0, 0));
+
 	Vertices.Reset();
 	Triangles.Reset();
 	Normals.Reset();

@@ -24,6 +24,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MarchingCubesCS.h"
+#include "MarchingCubesCSDeclaration.h"
 #include "MarchingCubesCSPrivatePCH.h"
 
 //#define NUM_THREADS_PER_GROUP_DIMENSION 8 //This has to be the same as in the compute shader's spec [X, X, 1]

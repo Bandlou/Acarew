@@ -42,7 +42,7 @@ class MARCHINGCUBESCOMPUTESHADER_API FMarchingCubesCS
 {
 public:
 	FMarchingCubesCS(float SimulationSpeed, int32 SizeX, int32 SizeY,
-	                            ERHIFeatureLevel::Type ShaderFeatureLevel);
+	                 ERHIFeatureLevel::Type ShaderFeatureLevel);
 	~FMarchingCubesCS();
 
 	/************************************************************************/
