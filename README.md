@@ -20,4 +20,4 @@ UE5 migration:
   - ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER: replaced with ENQUEUE_RENDER_COMMAND
 - https://github.com/ValentinKraft/UE4_SortingComputeShader/tree/master_4.24_transition
   - _FShaderResourceViewRHIParamRef_: replaced with _new FRHIShaderResourceView_
-  - 
+    - **That actually resulted in a bug**: using _FShaderResourceViewRHIRef_ instead for now

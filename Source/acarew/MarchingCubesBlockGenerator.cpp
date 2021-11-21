@@ -43,12 +43,17 @@ void AMarchingCubesBlockGenerator::GenerateBlock()
 	Vertices.Reset();
 	Triangles.Reset();
 	Normals.Reset();
-	Tangents.Reset();
-	UVs.Reset();
-	Colors.Reset();
 
-	UE_LOG(LogTemp, Warning, TEXT("Generating density grid..."));
-	const FIntVector WorldGridSize = FIntVector(35, 35, 35);
+	// Scale the (1x1x1) block
+	SetActorScale3D(FVector(BlockSize));
+
+	// The block is divided into {BlockSize}^3 voxels for tessellation, but we actually generate density values for
+	// a larger density volume (+1 voxel of margin data at the front edge and +2 voxels at the end edge).
+	// +1 voxel at the end edge because a voxel has 8 corners => the end row voxels require additional density values
+	// +1 voxels at each edge because normal vector computation require neighbouring density values
+	const FIntVector WorldGridSize = FIntVector(VoxelsPerBlockRow + 3);
+
+	// Density grid generation
 
 	TArray<TArray<TArray<float>>> Densities;
 	for (int x = 0; x < WorldGridSize.X; ++x)
@@ -63,19 +68,22 @@ void AMarchingCubesBlockGenerator::GenerateBlock()
 		}
 		Densities.Add(DensitiesXRow);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Generating density grid done"));
 
-	// Warning: must stop at 2 before grid's end because:
-	// - The last cube must have the density of its end corner (v6) => -1
-	// - The last cube's end corner (v6) can ask for its neighbours' density to calculate its normal vector => -1
-	UE_LOG(LogTemp, Warning, TEXT("Marching cubes..."));
+	// Vertices, normals and indexes computation. Must start at 1 and stop at 2 before end because:
+	// - The first cube's first corner (v0) can ask for its neighbours' density to calculate its normal vector
+	// - The last cube must have the density of its end corner (v6)
+	// - The last cube's end corner (v6) can ask for its neighbours' density to calculate its normal vector
+
 	int32 VerticesIndexCounter = 0;
-	for (int x = 1; x < Densities.Num() - 2; ++x)
-		for (int y = 1; y < Densities[x].Num() - 2; ++y)
-			for (int z = 1; z < Densities[x][y].Num() - 2; ++z)
+	for (int x = 1; x < VoxelsPerBlockRow + 1; ++x)
+		for (int y = 1; y < VoxelsPerBlockRow + 1; ++y)
+			for (int z = 1; z < VoxelsPerBlockRow + 1; ++z)
 				GenerateCube(Densities, FIntVector(x, y, z), VerticesIndexCounter);
-	UE_LOG(LogTemp, Warning, TEXT("Marching cubes done"));
 
+	// Mesh generation
+	TArray<FProcMeshTangent> Tangents;
+	TArray<FVector2D> UVs;
+	TArray<FLinearColor> Colors;
 	ThisMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, Colors, Tangents, false);
 }
 
@@ -83,14 +91,14 @@ void AMarchingCubesBlockGenerator::GenerateCube(const TArray<TArray<TArray<float
                                                 const FIntVector WorldCoordinates, int32& InOutVerticesIndexCounter)
 {
 	const TArray<float> LocalDensities = GetLocalDensities(WorldCoordinates, WorldDensities);
-	const int32 DensityFlags = GetDensityFlags(LocalDensities);
+	const uint8 CubeCase = GetCubeCase(LocalDensities);
 
 	// No triangle needed because the cube is either empty or full
-	if (DensityFlags == 0 || DensityFlags == 255)
+	if (CubeCase == 0 || CubeCase == 255)
 		return;
 
-	const int32 EdgeFlags = EdgeTable[DensityFlags];
-	const int32* TrianglesRaw = TriTable[DensityFlags];
+	const int32 EdgeFlags = EdgeTable[CubeCase];
+	const int8* TrianglesRaw = TriTable[CubeCase];
 
 	// Add vertices and normals
 	const FIntVector V0 = WorldCoordinates;
@@ -173,7 +181,7 @@ TArray<float> AMarchingCubesBlockGenerator::GetLocalDensities(const FIntVector C
 	return LocalDensities;
 }
 
-int32 AMarchingCubesBlockGenerator::GetDensityFlags(const TArray<float> LocalDensities) const
+uint8 AMarchingCubesBlockGenerator::GetCubeCase(const TArray<float> LocalDensities) const
 {
 	int32 DensityFlags = 0;
 	for (int i = 0; i < 8 && i < LocalDensities.Num(); ++i)
@@ -186,6 +194,7 @@ float AMarchingCubesBlockGenerator::GenerateDensity(const FIntVector Coordinates
 {
 	const int32 X = Coordinates.X, Y = Coordinates.Y, Z = Coordinates.Z;
 
+	return -8 + Z;
 	const float Rad = 15;
 	// return -8 + Z + sin(X * .5f) * 2 + cos(Y * .5f) * 2;
 	return - Rad + FVector(X - Rad * 1.1f, Y - Rad * 1.1f, 2 * Z - Rad * 1.5f).Size() +
@@ -204,8 +213,11 @@ float AMarchingCubesBlockGenerator::InterpolateDensity(const FIntVector Coordina
 FVector AMarchingCubesBlockGenerator::InterpolateEdge(const FIntVector CoordinatesA, const FIntVector CoordinatesB,
                                                       const float Ratio) const
 {
-	const FVector VertexA = CubeRadius * FVector(CoordinatesA.X, CoordinatesA.Y, CoordinatesA.Z);
-	const FVector VertexB = CubeRadius * FVector(CoordinatesB.X, CoordinatesB.Y, CoordinatesB.Z);
+	// Subtract 1 from the coordinates because the voxel generation loop starts at 1 (to VoxelsPerBlock + 1)
+	const FVector VertexA = (1.f / VoxelsPerBlockRow) *
+		FVector(CoordinatesA.X - 1, CoordinatesA.Y - 1, CoordinatesA.Z - 1);
+	const FVector VertexB = (1.f / VoxelsPerBlockRow) *
+		FVector(CoordinatesB.X - 1, CoordinatesB.Y - 1, CoordinatesB.Z - 1);
 	return VertexA + Ratio * (VertexB - VertexA);
 }
 
@@ -227,6 +239,115 @@ FVector AMarchingCubesBlockGenerator::GetEdgeNormal(const FIntVector Coordinates
 	}
 
 	return CornerNormals[0] + Ratio * (CornerNormals[1] - CornerNormals[0]);
+}
+
+// #########################
+// ####### METHOD 3 ########
+// #########################
+
+TArray<uint32> AMarchingCubesBlockGenerator::ListNonemptyCells(const TArray<TArray<TArray<float>>> WorldDensities)
+{
+	// Z8_Y8_X8_Case8 : coordinates + cube case (DensityFlags)
+	TArray<uint32> NonemptyCellList;
+
+	for (uint8 x = 1; x < VoxelsPerBlockRow + 1; ++x)
+	{
+		for (uint8 y = 1; y < VoxelsPerBlockRow + 1; ++y)
+		{
+			for (uint8 z = 1; z < VoxelsPerBlockRow + 1; ++z)
+			{
+				const TArray<float> LocalDensities = GetLocalDensities(FIntVector(x, y, z), WorldDensities);
+				const uint8 CubeCase = GetCubeCase(LocalDensities);
+
+				// If not empty nor full => requires at least 1 triangle
+				if (CubeCase > 0 && CubeCase < 255)
+				{
+					uint32 Z8_Y8_X8_Case8 = (z << 24) | (y << 16) | (x << 8) | (CubeCase);
+					NonemptyCellList.Add(Z8_Y8_X8_Case8);
+				}
+			}
+		}
+	}
+
+	return NonemptyCellList;
+}
+
+TArray<uint32> AMarchingCubesBlockGenerator::ListVerticesToGenerate(const TArray<uint32> NonemptyCellList)
+{
+	// Z8_Y8_X8_Null5_EdgeFlags3 : Coordinates + Null(5) + EdgeFlags (8,0,3)
+	TArray<uint32> VertexList;
+
+	for (uint32 Z8_Y8_X8_Case8 : NonemptyCellList)
+	{
+		// Here we must find which of the 0, 3 and 8 edges are active
+		// Instead of using the EdgeTable to find out, we check if the corners connecting those edges are different
+
+		uint8 CubeCase = static_cast<uint8>(Z8_Y8_X8_Case8 & 0xFF);
+		int BitCornerV0 = (CubeCase) & 1;
+		int BitCornerV1 = (CubeCase >> 1) & 1;
+		int BitCornerV3 = (CubeCase >> 3) & 1;
+		int BitCornerV4 = (CubeCase >> 4) & 1;
+		FIntVector BuildVertexOnEdge = FIntVector(BitCornerV3, BitCornerV1, BitCornerV4) - FIntVector(BitCornerV0);
+
+		uint32 Z8_Y8_X8_Null5_EdgeFlags3 = Z8_Y8_X8_Case8 & 0xFFFFFF00;
+		if (BuildVertexOnEdge.X != 0) Z8_Y8_X8_Null5_EdgeFlags3 |= 1; // edge 3 flag
+		if (BuildVertexOnEdge.Y != 0) Z8_Y8_X8_Null5_EdgeFlags3 |= 2; // edge 0 flag
+		if (BuildVertexOnEdge.Z != 0) Z8_Y8_X8_Null5_EdgeFlags3 |= 4; // edge 8 flag
+
+		VertexList.Add(Z8_Y8_X8_Null5_EdgeFlags3);
+	}
+
+	return VertexList;
+}
+
+void AMarchingCubesBlockGenerator::GenerateVertices(const TArray<uint32> VertexList,
+                                                    const TArray<TArray<TArray<float>>> WorldDensities)
+{
+	for (uint32 Z8_Y8_X8_Null5_EdgeFlags3 : VertexList)
+	{
+		uint8 Z = (Z8_Y8_X8_Null5_EdgeFlags3 >> 24) & 0xFF;
+		uint8 Y = (Z8_Y8_X8_Null5_EdgeFlags3 >> 16) & 0xFF;
+		uint8 X = (Z8_Y8_X8_Null5_EdgeFlags3 >> 8) & 0xFF;
+		uint8 EdgeFlags = Z8_Y8_X8_Null5_EdgeFlags3 & 0x0F;
+
+		const FIntVector V0 = FIntVector(X, Y, Z);
+		const FIntVector V1 = V0 + FIntVector(0, 1, 0);
+		const FIntVector V3 = V0 + FIntVector(1, 0, 0);
+		const FIntVector V4 = V0 + FIntVector(0, 0, 1);
+
+		if (EdgeFlags & 1) AddVertexAndNormal(V3, V0, WorldDensities);
+		if (EdgeFlags >> 1 & 1) AddVertexAndNormal(V0, V1, WorldDensities);
+		if (EdgeFlags >> 2 & 1) AddVertexAndNormal(V0, V4, WorldDensities);;
+	}
+}
+
+TMap<FVector, uint32> AMarchingCubesBlockGenerator::SplatVertexIds(const TArray<uint32> VertexList)
+{
+	TMap<FVector, uint32> VertexIDVolume;
+
+	for (uint32 Z8_Y8_X8_Null5_EdgeFlags3 : VertexList)
+	{
+		// We map the id of the vertex according to its voxel coordinates
+
+		// TODO: WIP ... return type??
+		uint8 Z = (Z8_Y8_X8_Null5_EdgeFlags3 >> 24) & 0xFF;
+		uint8 Y = (Z8_Y8_X8_Null5_EdgeFlags3 >> 16) & 0xFF;
+		uint8 X = (Z8_Y8_X8_Null5_EdgeFlags3 >> 8) & 0xFF;
+		uint8 EdgeFlags = Z8_Y8_X8_Null5_EdgeFlags3 & 0x07;
+	}
+}
+
+void AMarchingCubesBlockGenerator::GenerateIndices(const TArray<uint32> NonemptyCellList)
+{
+	for (uint32 Z8_Y8_X8_Case8 : NonemptyCellList)
+	{
+		uint8 CubeCase = static_cast<uint8>(Z8_Y8_X8_Case8 & 0xFF);
+		const int8* TrianglesRaw = TriTable[CubeCase];
+
+		// TODO: WIP ... more input??
+		// for (int i = 0; TrianglesRaw[i] >= 0; ++i)
+		// 	Triangles.Add(TrianglesRaw[i]);
+	}
 }
 
 const int32 AMarchingCubesBlockGenerator::EdgeTable[256] = {
@@ -264,7 +385,7 @@ const int32 AMarchingCubesBlockGenerator::EdgeTable[256] = {
 	0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
-const int32 AMarchingCubesBlockGenerator::TriTable[256][16] = {
+const int8 AMarchingCubesBlockGenerator::TriTable[256][16] = {
 	{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
