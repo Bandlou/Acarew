@@ -1,6 +1,7 @@
 # Acarew
+- Game engine: __Unreal Engine v5.0__
+- Contributor: __Louis Bandelier__
 
-## Description
 [WIP] Marching Cubes basic implementation.
 
 ## Resources
