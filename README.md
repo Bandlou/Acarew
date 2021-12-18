@@ -22,3 +22,4 @@ UE5 migration:
 - https://github.com/ValentinKraft/UE4_SortingComputeShader/tree/master_4.24_transition
   - _FShaderResourceViewRHIParamRef_: replaced with _new FRHIShaderResourceView_
     - **That actually resulted in a bug**: using _FShaderResourceViewRHIRef_ instead for now
+- Deprecated: UnbindRenderTargets API is deprecated; EndRenderPass implies UnbindRenderTargets.
